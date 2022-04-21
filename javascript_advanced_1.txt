@@ -137,4 +137,8 @@ reduce function --> accepts an reducer function with acculumator and current  ar
 
 second arguement of the reduce function is the initial value of acculumator.
 
-
+var date = new Date();  
+let hour = date.getHours();  
+let min=  date.getMinutes();  
+let sec = date.getSeconds(); 
+console.log(hour + ":" + min + ":" + sec)   // prints 22:57:12

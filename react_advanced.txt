@@ -334,3 +334,198 @@ The RunTime
 single threaded hence single call stack, each entry in call stack is called a  stack frame
 
 
+React 18 - 5 New Hooks
+
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+const rootElement = document.getElementById('root');
+const root = createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+
+
+useTransition() -- hook for transition -- returns the transition state and a function to start the transition
+
+const [isPending,startTransition] = useTransition();
+
+React state updates are classified into two categories:
+
+   1.Urgent updates — They reflect direct interaction, such as typing, clicking, pressing, dragging, etc.
+   2.Transition updates — They transition the UI from one view to another.
+   
+   
+import { useEffect, useState, useTransition } from 'react';
+
+const SlowUI = ({ value }) => (
+  <>
+    {Array(value)
+      .fill(1)
+      .map((_, index) => (
+        <span key={index}>{value - index} </span>
+      ))}
+  </>
+);
+
+function App() {
+  const [value, setValue] = useState(0);
+  const [value2, setValue2] = useState(100000);
+  const [isPending, startTransition] = useTransition();
+
+  const handleClick = () => {
+    setValue(value + 1);
+    startTransition(() => setValue2(value2 + 1));
+  };
+
+  return (
+    <>
+      <button onClick={handleClick}>{value}</button>
+      <div
+        style={{
+          opacity: isPending ? 0.5 : 1,
+        }}
+      >
+        <SlowUI value={value2} />
+      </div>
+    </>
+  );
+}
+
+export default App;
+
+
+useDeferredValue
+useDeferredValue(value) is hook that accepts a value and 
+returns a new copy of the value that will defer to more urgent updates. 
+The previous value is kept until urgent updates have completed. Then, the new value is rendered. This hook is similar to using debouncing or throttling to defer updates.
+
+import { useDeferredValue, useState } from 'react';
+
+const SlowUI = () => (
+  <>
+    {Array(50000)
+      .fill(1)
+      .map((_, index) => (
+        <span key={index}>{100000} </span>
+      ))}
+  </>
+);
+
+function App() {
+  const [value, setValue] = useState(0);
+  const deferredValue = useDeferredValue(value);
+
+  const handleClick = () => {
+    setValue(value + 1);
+  };
+
+  return (
+    <>
+      <button onClick={handleClick}>{value}</button>
+      <div>DeferredValue: {deferredValue}</div>
+      <div>
+        <SlowUI />
+      </div>
+    </>
+  );
+}
+
+export default App;
+
+useId:
+
+useId() is a hook that generates a unique id:
+
+1. This id is stable across the server and client, 
+which avoids hydration mismatches for server-side rendering.
+2. This id is unique for the entire application. 
+In the case of multi-root applications, hydrateRoot has an optional prop, identifierPrefix, 
+which can be used to add a prefix to prevent collisions.
+3. This id can be appended with prefix and/or suffix to generate multiple unique ids that are used in a component.
+It seems trivial. But, useId was evolved from useOpaqueIdentifier, 
+which generates an opaque id that cannot be operated upon.
+
+useSyncExternalStore:
+
+useSyncExternalStore is a hook recommended for reading and subscribing from external data sources (stores).
+
+const state = useSyncExternalStore(subscribe, getSnapshot[, getServerSnapshot]);
+
+1. subscribe: It is a function to register a callback that is called whenever the store changes.
+2. getSnapshot: It is function that returns the current value of the store.
+3. getServerSnapshot: It is function that returns the snapshot used during server rendering. This is an optional parameter.
+
+import { useSyncExternalStore } from 'react';
+
+function App() {
+  const width = useSyncExternalStore(
+    (listener) => {
+      window.addEventListener('resize', listener);
+      return () => {
+        window.removeEventListener('resize', listener);
+      };
+    },
+    () => window.innerWidth
+    // () => -1,
+  );
+
+  return <p>Size: {width}</p>;
+}
+
+export default App;
+
+
+useInsertionEffect
+
+useEffect(didUpdate) accepts a function that contains imperative, possibly effectful code, which are mutations, subscriptions, timers, logging, and other side effects. By default, effects run after every completed render, but the invocation can be controlled with a second argument of an array.
+
+useLayoutEffect has the same signature as useEffect, but it fires synchronously after all DOM mutations. i.e. it is fired before useEffect. It is used to read layout from the DOM and synchronously re-render. Updates scheduled inside useLayoutEffect will be flushed synchronously, before the browser has a chance to paint.
+
+useInsertionEffect is introduced in React 18. It has the same signature as useEffect, but it fires synchronously before all DOM mutations. i.e. it is fired before useLayoutEffect. It is used to inject styles into the DOM before reading layout.
+
+useInsertionEffect is intended for CSS-in-JS libraries, such as styled-components. Since this hook is limited in scope, this hook does not have access to refs and cannot schedule updates.
+
+import { useEffect, useInsertionEffect, useLayoutEffect } from 'react';
+
+const Child = () => {
+  useEffect(() => {
+    console.log('useEffect child is called');
+  });
+  useLayoutEffect(() => {
+    console.log('useLayoutEffect child is called');
+  });
+  useInsertionEffect(() => {
+    console.log('useInsertionEffect child is called');
+  });
+};
+
+function App() {
+  useEffect(() => {
+    console.log('useEffect app is called');
+  });
+  useLayoutEffect(() => {
+    console.log('useLayoutEffect app is called');
+  });
+  useInsertionEffect(() => {
+    console.log('useInsertionEffect app is called');
+  });
+  return (
+    <div className="App">
+      <Child />
+      <p>Random Text</p>
+    </div>
+  );
+}
+
+export default App;

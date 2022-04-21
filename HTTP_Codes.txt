@@ -1,0 +1,25 @@
+1xx - Informational Codes - 102 --> operation happening in the background and might take some time to complete.
+
+2xx - Success codes
+200 -- full success
+201 -- Created
+203: Non-authoritative information: This code is intended to be used when, while routing the request through a transforming proxy, the origin responds with a 200.
+204: No Content: This is a successful code, but there is no content coming back from the server. Sometimes, APIs return 200, even if there is no content.
+206: Partial Content: This code is used for paginated responses. A header is sent, specifying a range (and an offset) that the client will accept. If the response is bigger than the range, the server will reply with 206, indicating that there is more data to follow.
+
+3xx - Redirection Codes
+301: Moved permanently
+302: Found
+308 Permanent Redirect (different from 301) -  the 308 code does not allow the HTTP method to change.
+
+4xx - Client errors
+400 - Bad Request
+401 - Unauthorized
+403 - Forbidden
+404 - Not Found
+
+5xx - Server errors
+500 - Internal Server Error
+501 - Not Implemented
+503 - Service unavailable
+
