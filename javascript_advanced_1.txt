@@ -1,0 +1,140 @@
+if let is used instead of var, closure still works
+
+
+var rentPrice = function(initialRent) {
+   var rent = initialRent;
+  
+    // Define private variables for
+    // the closure
+    return {
+      getRent: function() {
+        return console.log(rent);
+      },
+      incRent: function(amount) {
+        rent += amount;
+        console.log(rent);
+      },
+      decRent: function(amount) {
+         rent -= amount;
+         console.log(rent);
+      }
+    }
+}
+
+currying :
+
+Currying is a transformation of functions that translates a function from callable as f(a, b, c) into callable as f(a)(b)(c).
+
+
+consider a f(a,b) as arguements:
+
+function curry(f) { // curry(f) does the currying transform
+  return function(a) {
+    return function(b) {
+      return f(a, b);
+    };
+  };
+}
+
+curried function can be conventiently created with default arguement. like 
+
+curriedfn = curry(f)
+
+curriedfn_a = curriedfn(a)
+
+Advanced curried implementation
+
+function curry(func) {
+
+  return function curried(...args) {
+    if (args.length >= func.length) {
+      return func.apply(this, args);
+    } else {
+      return function(...args2) {
+        return curried.apply(this, args.concat(args2));
+      }
+    }
+  };
+
+}
+
+Disadvantages of closures:
+1. memory consumption and memory leaks
+
+
+First Class Function
+
+function a(){} // function statement aka function declaration
+
+var b = function(){} // function expression
+
+major difference is between these two is hoisting for function b() it will throw error if called before the assignment of function
+
+function(){} // anonymous function , causes Syntax error, used when are used as values (can be assigned to the variable)
+
+var b = function xyz(){} // Named function expression , if the xyz is called the we will get in reference scope, because it is not created in global scope
+
+functions can be passed as arguement can be returned from another function.
+
+functions are first class citizens
+
+
+Event Loop:
+
+JS is synchoronous single threaded language (single call stack)
+
+Call stack --> function call (Execution context)(first is global execution context will be added) is added to the call stack and pops out after it is finished
+
+Call stack is present in JS Engine
+
+WebAPI(window) which is globalThis for browser --> setTimeout, DOM API, fetch(), local storage, console, location
+
+
+Event loop --> the callback function after, the timeout ends is pushed to the callback queue, event loop checks the callback queue if there is any function it pushes it to the call stack
+
+Event loop continously monitors the call stack and callback queue
+
+microtask queue --> higher priority than callback queue, the fetch callbacks are added to the microtask queue.
+
+all callback coming from promises and mutation observers are added to microtask queue
+
+Starvation
+
+
+Javascript runtime environment
+
+1. JS Engine
+2. API
+3. Event loop
+4. Call stack queue
+5. microtask queue
+
+JS Engine - V8:
+
+code --> parsing(AST) --> compilation --> execution
+
+JIT compilation --> interpreter converts AST to executable with the help of optimization using compiler
+
+Memory Heap (Garbage Collector)
+
+setTimeout waits atleast sometime but not exact sometime
+
+
+Higher Order Functions:
+
+a function that take another function as arguement or returns a function
+
+map,filter, reduce are the higher order function
+
+map, fitler, reduce functions:
+
+map --> accepts the transformation function(takes individual element and returns transformed element) --> returns an array --> simply transforms a array 
+
+
+filter --> accepts the filtering function(takes an individual element and returns true ,if it needs to be filtered --> returns an array
+
+reduce function --> accepts an reducer function with acculumator and current  arguement --> iterates over each and every element of the array, current is the iterated elements and the acculumator is the accumalted in it --> returns the acculumator (single value)
+
+second arguement of the reduce function is the initial value of acculumator.
+
+

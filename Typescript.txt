@@ -1,0 +1,115 @@
+Type annotations - (developer tell) code we add to tell Typescript what type of value a variable will refer to
+
+Type inference - (typescript tells) typescript tries to figure out what type of value a varibale refers to
+
+
+Class usually has capitalized name
+
+Object literal
+
+let point:{x:number;y:number}=
+{
+x:10
+y:20
+}
+
+function annotations
+
+const logNumber:(i:number)=>void=(i:number)=>
+{
+console.log(i);
+}
+
+avoid variables with 'any' at all costs
+
+
+interface Vehicle {
+
+name:string;
+year:number;
+broken:boolean;
+summary():string;
+}
+
+an object should have all the types in interface but can also have additional properties
+
+
+every object must implement the interface that the function accepts
+
+Class fields and methods
+
+class Vehicle{
+constructor(public color:string){
+  super('orange')
+}
+public drive():void{
+}
+
+}
+
+const vehicle = new Vehicle();
+
+vehicle.drive()
+
+class Car extends Vehicle{
+
+}
+we can overwrite different methods
+
+existence of modifiers public,private, protected
+
+default is public
+
+Definitely Typed Naming --> Type definition file
+npm install @types/faker
+
+
+Generics
+
+type numarr = Array<number>
+
+
+const last = <T>(arr:T[])=>{
+  return arr[arr.length-1];
+}
+
+const makeArr = <X,Y>(x:X,y:Y):[X,Y]=>{
+return [x,y];
+
+}
+
+Password hashing 
+
+import { scrypt, randomBytes } from 'crypto';
+import { promisify } from 'util';
+
+const scryptAsync = promisify(scrypt);
+
+export class Password {
+  static async toHash(password: string) {
+    const salt = randomBytes(8).toString('hex');
+    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+
+    return `${buf.toString('hex')}.${salt}`;
+  }
+
+  static async compare(storedPassword: string, suppliedPassword: string) {
+    const [hashedPassword, salt] = storedPassword.split('.');
+    const buf = (await scryptAsync(suppliedPassword, salt, 64)) as Buffer;
+
+    return buf.toString('hex') === hashedPassword;
+  }
+}
+
+
+Mongo DB pre-save hook
+
+userSchema.pre('save', async function(done) {
+  if (this.isModified('password')) {
+    const hashed = await Password.toHash(this.get('password'));
+    this.set('password', hashed);
+  }
+  done();
+});
+
+

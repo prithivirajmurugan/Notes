@@ -1,0 +1,305 @@
+from collections import deque
+graph = {
+  'f': ['g', 'i'],
+  'g': ['h'],
+  'h': [],
+  'i': ['g', 'k'],
+  'j': ['i'],
+  'k': []
+}
+
+def has_path_dfs(graph, src, dst):
+   # todo
+    stack=[]
+    stack.append(src)
+    while stack:
+        current = stack.pop()
+        if current==dst:
+            return True
+        for neighbour in graph[current]:
+            stack.append(neighbour)
+    return False
+        
+def has_path_bfs(graph,src,dst):
+    q = deque()
+    q.append(src)
+    while(q):
+        current = q.popleft()
+        if current==dst:
+            return True
+        for neighbour in graph[current]:
+            q.append(neighbour)
+    return False
+            
+result = has_path_dfs(graph, 'f', 'k') # True
+
+
+
+#has path 
+
+
+edges = [
+  ('i', 'j'),
+  ('k', 'i'),
+  ('m', 'k'),
+  ('k', 'l'),
+  ('o', 'n')
+]
+
+def create_adjacency_list(edge_list):
+    graph = {}
+    for edge in edge_list:
+        a,b = edge
+        if a not in graph:
+            graph[a] = []
+        if b not in graph:
+            graph[b] = []
+        graph[a].append(b)
+        graph[b].append(a)
+    return graph
+graph = create_adjacency_list(edges)
+print(graph)
+
+def hasPath(graph,src,des):
+    visited=set()
+    stack = [src]
+    while stack:
+        curr = stack.pop()
+        if curr in visited:
+            return False
+        visited.add(curr)
+        if curr==des:
+            return True
+        for neighbour in graph[curr]:
+            stack.append(neighbour)
+    return False
+result = hasPath(graph,'j','m')
+
+
+
+grid = [
+  ['W', 'L', 'W', 'W', 'W'],
+  ['W', 'L', 'W', 'W', 'W'],
+  ['W', 'W', 'W', 'L', 'W'],
+  ['W', 'W', 'L', 'L', 'W'],
+  ['L', 'W', 'W', 'L', 'L'],
+  ['L', 'L', 'W', 'W', 'W'],
+];
+
+def islandCount(grid):
+    visited = set()
+    r = len(grid)
+    c = len(grid[0])
+    count = 0
+    isCount = False
+    for i in range(r):
+        for j in range(c):
+            if grid[i][j]=='L':
+                isCount = explore(grid,i,j,visited)
+                if isCount:
+                    count+=1
+    return count
+def explore(grid,i,j,visited):
+    rowInbounds = 0 <= i and i < len(grid)
+    colInbounds = 0 <= j and j < len(grid[0])
+    if not rowInbounds or not colInbounds:
+        return False
+    if grid[i][j] == 'W':
+        return False
+    pos = (i,j)
+    if pos in visited:
+        return False
+    visited.add(pos)
+    explore(grid,i-1,j,visited)
+    explore(grid,i+1,j,visited)
+    explore(grid,i,j-1,visited)
+    explore(grid,i,j+1,visited)
+    return True
+
+result = islandCount(grid)
+
+
+grid = [
+  ['W', 'L', 'W', 'W', 'W'],
+  ['W', 'L', 'W', 'W', 'W'],
+  ['W', 'W', 'W', 'L', 'W'],
+  ['W', 'W', 'L', 'L', 'W'],
+  ['L', 'W', 'W', 'L', 'L'],
+  ['L', 'L', 'W', 'W', 'W'],
+];
+
+def minimumIsland(grid):
+    r = len(grid)
+    c = len(grid[0])
+    visited = set()
+    minSize = float('inf')
+    for i in range(r):
+        for j in range(c):
+            if grid[i][j] == 'L':
+                size = exploreSize(grid,i,j,visited)
+                if size>0:
+                    minSize = min(size,minSize)
+    return minSize
+def exploreSize(grid,i,j,visited):
+    rowInbound = 0<=i and i<len(grid)
+    colInbound = 0<=j and i<len(grid[0])
+    if not rowInbound or not colInbound:
+        return 0
+    if grid[i][j] == 'W':
+        return 0
+    pos = (i,j)
+    if pos in visited:
+        return 0
+    size=1
+    visited.add(pos)
+    size+=exploreSize(grid,i-1,j,visited)
+    size+=exploreSize(grid,i+1,j,visited)
+    size+=exploreSize(grid,i,j-1,visited)
+    size+=exploreSize(grid,i,j-1,visited)
+    return size
+    
+
+
+result = minimumIsland(grid)
+
+
+
+graph = {
+  0: [8, 1, 5],
+  1: [0],
+  5: [0, 8],
+  8: [0, 5],
+  2: [3, 4],
+  3: [2, 4],
+  4: [3, 2]
+}
+
+def connectComponentCount(graph):
+    visited = set()
+    count=0
+    for curr in graph:
+        if curr in visited:
+            continue
+        stack = [curr]
+        while stack:
+            curr_node = stack.pop()
+            if curr_node in visited:
+                continue
+            visited.add(curr_node)
+            print(visited)
+            for neighbor in graph[curr_node]:
+                stack.append(neighbor)
+        count+=1
+    return count
+def connectComponentCount(graph):
+    visited = set()
+    count=0
+    def dfs(node):
+        if node in visited:
+            return 0
+        visited.add(node)
+        for nei in graph[node]:
+            dfs(nei)
+        return 1
+    for node in graph:
+        count+=dfs(node)
+    return count
+
+result = connectComponentCount(graph)
+
+
+
+
+graph = {
+  '1': ['2'],
+  '2': ['1','8'],
+  '6': ['7'],
+  '9': ['8'],
+  '7': ['6', '8'],
+  '8': ['9', '7', '2']
+}
+
+def largestComponentCount(graph):
+    visited = set()
+    max_count = 0
+    for curr in graph:
+        if curr in visited:
+            continue
+        stack = [curr]
+        count = 0
+        while stack:
+            curr_node = stack.pop()
+            if curr_node in visited:
+                continue
+            visited.add(curr_node)
+            count += 1
+            for neighbor in graph[curr_node]:
+                stack.append(neighbor)
+        max_count = max(count,max_count)
+    return max_count
+
+def largestComponentSize(graph):
+    visited = set()
+    maxSize=0
+    def dfs(node):
+        if node in visited:
+            return 0
+        size=1
+        visited.add(node)
+        for nei in graph[node]:
+            size+=dfs(nei)
+        return size
+    for node in graph:
+        size=dfs(node)
+        maxSize =  max(size,maxSize)
+    return maxSize
+
+result = largestComponentCount(graph)
+
+#for disconnected components always do iterative code is needed along with stack or queue
+
+
+from collections import deque
+edges =  [
+  ['m', 'n'],
+  ['n', 'o'],
+  ['o', 'p'],
+  ['p', 'q'],
+  ['t', 'o'],
+  ['r', 'q'],
+  ['r', 's']
+];
+
+def create_graph(edges):
+    graph = {}
+    for edge in edges:
+        a,b = edge
+        if a not in graph:
+            graph[a] = []
+        if b not in graph:
+            graph[b] = []
+        graph[a].append(b)
+        graph[b].append(a)
+    return graph
+graph = create_graph(edges)
+    
+
+def shortestPath(graph,src,dst):
+    visited = set()
+    q = deque()
+    q.append((src,0))
+    while q:
+        curr,dist = q.popleft()
+        if curr == dst:
+            return dist
+        if curr in visited:
+            continue
+        visited.add(curr)
+        for neighbor in graph[curr]:
+            q.append((neighbor,dist+1))
+    return -1
+
+result = shortestPath(graph,'m','s')
+            
+                        
+    

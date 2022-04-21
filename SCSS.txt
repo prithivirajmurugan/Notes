@@ -1,0 +1,69 @@
+$primayBtn --> variable
+
+
+header{
+button{
+&:hover{
+}
+&::after{
+}
+}
+}  // nesting the classes
+
+
+Seperate files into the different files
+
+_header.scss
+
+In main scss files
+@import "./header";
+
+// Mixin -- javascript functions
+@mixin flexCenter{
+  display:flex;
+  justify-content:center;
+  align-items:center
+}
+
+header{
+@include flexCenter();
+}
+
+@mixin flexCenter($direction){
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:$direction;
+}
+header{
+@include flexCenter(column);
+}
+
+// extension
+
+contact{
+@extend header;
+background:red;
+}
+
+// maps --> key-value pairs
+
+$font-weights:(
+"regular":400,
+"medium":500,
+"bold":700,
+);
+
+font-weight:map-get($font-weights,bold);
+
+.main{
+#{&}__paragraph{} // ambersand and interpolation
+}
+#{&} --> will take everything this contains not just the name
+
+
+@function weight($weight-name)
+{
+@return map-get($font-weight,$weight-name)
+};
+

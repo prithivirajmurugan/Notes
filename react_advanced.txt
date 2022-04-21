@@ -1,0 +1,336 @@
+this -> reference to the object executing the current function
+
+// if method --> reference the object to which the method belongs to
+
+// if a function --> global (window in browser,global in nodejs)
+
+
+// if a constructor function
+
+function Video(title){
+this.title = title;
+console.log(this)
+}
+
+const v = new Video('b') // this references to the new object
+
+const video = {
+	title:'a',
+	tags:['a','b','c'],
+	showTags(){
+		this.tags.forEach(function(tag){
+			console.log(this,tag);
+		},this);
+	}
+}
+
+
+
+Bind -> Binding an object to a function and so that we use that object using 'this'
+
+
+let c1 = {
+	x:5,
+	y:10
+}
+
+let c2={
+	x:75,
+	y:235,
+}
+
+function printCoordinates(){
+	console.log(this.x + ',' + this.y);
+}
+
+let c1_func = printCoordinates.bind(c1);
+let c2_func = printCoordinates.bind(c2);
+
+
+
+array.flat() // input parameter deep by default is 1
+
+
+infiniteDeep.flat(Infinity)
+
+function flatArray(arr){
+	let result;
+	let main=arr,first;
+	while(main.length>0){
+		first = main[0]
+		if(Array.isArray(first)){
+			Array.prototype.splice.apply(main,[0,1].concat(first));
+		}else{
+			result.push(first);
+			main.splice(0,1);
+		}
+	}
+	return result;
+}
+
+
+function flatten(arr) {
+  let flat = []
+  for (let i=0; i < arr.length; i++) {
+    const cur = arr[i]
+    if(!Array.isArray(cur)){
+      flat.push(cur)
+    }else{
+      for (let j=0; j < cur.length; j++) {
+        flat.push(cur[j])
+      }
+    }
+  }
+  return flat
+}
+
+console.log(flatten([['foo','bar'],['baz','qux']]))
+console.log(flatten([[1],[2],3,4,[5]]))
+console.log(flatten([false,[true,[false]],[true]]))
+console.log(flatten([]))
+
+var i in arr ==> iterates over keys -> works with even objects
+var i of arr ==> iterates over values -> works only with arrays
+
+numbers.forEach(myFunction);
+function myFunction(value,index,array){
+}
+
+new Set([]) // to create a new set
+
+
+Prototypcal inheritence
+
+every class has a prototype properities to which we can methods and attributes // the original class will not have this property
+
+but the object created with help of the class will have the method added
+
+function Grizzly(){
+	Bear.call(this);
+}
+Grizzly.prototype = Object.create(Bear.prototype);
+
+prototype chaining if the object does not have the method then it will the prototype
+
+
+arr.__proto__
+
+Object.prototype => base prototype of the arr.__proto__
+
+object.__proto__.__proto__ == null
+
+call method ==> function borrowing
+
+let printFullName = function(){
+	console.log(this.firstName + " " + this.lastName);
+}
+name.printFullName.call(name2);
+
+printFullName.call(name2) or printFullName.call(name1)
+
+printFullName.call(name,"Dehradun","Maharashtra");
+printFullName.apply(name,["Dehradun","Maharashtra"]);
+
+let printMyName  = printFullName.bind(name2,"Mumbai","Maharashtra");
+
+
+
+Function.prototype.mybind = function(..args){
+	let obj = this
+	params = args.slice(1);
+	return function(..args2){
+		new_params = [...params,...args2]
+		obj.apply(args[0],new_params)
+	}
+}
+
+Local Storage:
+1. read-only interface property provides access to the Document’s local storage object,
+2. across browser sessions
+3. localStorage data gets cleared when the page session ends or page is closed
+4. localStorage.setItem(key, value)
+5. localStorage.getItem(key)
+6. localStorage.removeItem(key)
+7. localStorage.clear()
+8. Browser Only
+9. 10mb
+10. js can access it and it should be sent by us (not automatically sent as like cookies)
+
+Session Storage:
+1. Session Storage objects can be accessed using the sessionStorage read-only property
+2. localStorage data does not expire, whereas sessionStorage data is cleared when the page session ends
+3. 5mb
+4. Same tab
+5. 
+
+Cookies:
+1. Managed by Browser and Server
+2. 4 Kb
+3. Any window
+4. Sent with requests
+5. document.cookie='name=Kyle;expire=' + new Date().toUTCString()
+6. res.cookie('grass','green',{httpOnly:true,secure:true,maxAge:12000}) // to restrict client side to access the cookie
+7. web browser automatically sends the cookie back to the web-browser everytime it sends a request
+8. npm install cookie-parser
+9. CSRF --> Cross Side Request Forgery --> since cookie are automatically send to every request another site can simply post
+10. npm install csurf -> encode csurf in your html to prevent it
+11. can be used with jwt
+
+
+Session-with-db:
+1. Session id is sent to the server , server stores the id and the value related to the value
+2. npm install express-session
+3. req.session.user
+4. session data use store as a database
+5. session id is stored in cookie of browser, which is checked with the database to find the user
+6. can be used in terms of browser
+
+JWT
+1.platform agnostic , no need browser to check
+2.every login sends a token, 
+3.server will not store any data
+4. jwt.sign({some_property:"some_value"},jwtsecret) // jwt secret should be in .env file
+5. jwt.verify(req.body.token,jwtsecret,function(err,decoded){})
+6. front-end can store the jwt in localstorage and send to server whenever it is needed.
+7. downside of jwt is that person can get hold of jwt token and use it any browser but it cannot be done in terms of session storage when tab is closed.
+
+Object cloning
+1. {...food} // shallow copy (first level is copied)
+2. Object.assign({},food}
+3. JSON.parse(JSON.stringify(food)) //deep copy at all levels
+
+Reconciliation is the algorithm behind Virtual DOM --> difference in the current tree and the work-in progress tree is flashed to the rendering environment
+the operation are prioritized before rendered
+
+Web and React-Native rendering
+
+heuristic algorithm --> find approximate solution (assumption)
+
+New type --> New tree
+New Key --> New Key
+
+
+How react worked internally?
+
+1. most expensive thing I can do to a web browser, is to write in a DOM
+2. DOM API edits the HTML document
+3. react creates an instance of the component, instance consumes its props it deduces state and returns the element (plain object, not HTML)
+4. Reconciliation -> diff the tree of virtualDOM and updating the difference part using heruistic, creates and destroying DOM elements
+5. type of children component changes the DOM destroyed and recreated
+6. Key is important because if new element is updated to the beginning of the list, then the whole list will be re-generated again.
+7. Fewer DOM manipulation possible should be the key
+8. index may or may not be changed, so do not use index as key
+9. ReactDOM.render --> rendering process,generates virtual DOM, generates Tree of elements and inserts it to the DOM
+10. React --> only does the diffing process
+11. React Fiber --> provides non-blocking renders, does the insertion into DOM, possibility of dynamically imports
+
+const MyComponent = (<main><h1 id="title">Look ma!!! </h1></main>)
+console.log(MyComponent) // provides virtual DOM
+
+
+Context API:
+The Context API can be used to share data with multiple components, without having to pass data through props manually.
+
+const NotesContext = createContext([]);
+
+<NotesContext.Provider> and <NotesContext.Consumer>
+
+
+Provider --> The Provider component is going to be used to wrap the components that are going to have access to our context.
+
+<NotesContext.Provider value={this.state.notes}>
+...
+</Notes.Provider>
+
+Consumer:
+
+The Consumer component allows a React component to subscribe to the context changes. The component makes the data available using a render prop.
+
+<NotesContext.Consumer>
+  {values => <h1>{value}</h1>
+</Notes.Consumer>
+
+const notes = useContext(NotesContext);
+
+
+
+Debouncing and Throttling --> limit the rate of function call
+
+
+
+Debouncing method in js
+
+any event will restart the timer and will wait for 300 ms to call the function
+
+attached function will be executed only after the specified time once the user stops firing the event.
+
+function debounce(func,timeout=300){
+	let timer;
+	return (...args)=>{
+		clearTimeout(timer);
+		timer = setTimeout(()=>{func.apply(this,args);},timeout);
+};
+}
+}
+
+function saveInput(){
+	console.log('Saving Data');
+}
+const processChange =  debounce(()=> saveInput());
+
+Throttling method in js
+
+if the difference between two function call is 300ms then function get executed
+
+Throttling ensures that the function executes at a regular interval
+
+function throttleFunction = function(func,delay){
+	if(timerId){
+		return
+	}
+	timerId = setTimeout(()=>{func(),timerId=undefined},delay)
+}
+
+Event Bubbling 
+
+When an event happens on an element, it first runs the handlers on it, then on its parent, then all the way up on other ancestors.
+
+Almost all events bubble , but some may not like focus event
+
+event.target --> contains the element which initiated the bubbling process
+
+this or event.currentTarget --> current element, the one that has a currently running handler on it
+
+event.stopPropagation() --> calling this at handler stops the propagation , stops upwards but other handlers in same element will running
+
+event.stopImmediatePropagation() --> no other handlers executed
+
+No real need to prevent bubbling
+
+
+
+Capturing aka trickling
+
+Three phases of event propagation:
+1. Capturing phase - event goes down to the element
+2. Target phase - event reached the target element
+3. Bubbling phase - event bubbles up from the element
+
+Hoisting
+
+
+Currying
+
+
+
+The RunTime
+
+    1. JS Engine
+    2. Web API
+    3. Callback Queue or message queue
+    4. Event Table
+    5. Event loop
+	
+single threaded hence single call stack, each entry in call stack is called a  stack frame
+
+

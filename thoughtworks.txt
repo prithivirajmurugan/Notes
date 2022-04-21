@@ -1,0 +1,16 @@
+98679949831
+https://thoughtworks.zoom.us/j/98679949831 
+
+
+How to calculate usage cost
+- Unit of meter readings : kW (KilloWatt)
+- Unit of Time : Hour (h)
+- Unit of Energy Consumed : kW x Hour = kWh
+- Unit of Tariff : $ per kWh (ex 0.2 $ per kWh)
+
+To calculate the usage cost for a duration (D) in which lets assume we have captured N electricity readings (er1,er2,er3....erN)
+
+Average reading in KW = (er1.reading + er2.reading + ..... erN.Reading)/N
+Usage time in hours = Duration(D) in hours
+Energy consumed in kWh = average reading x usage time
+Cost = tariff unit prices x energy consumed

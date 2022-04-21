@@ -1,0 +1,421 @@
+If two adjacent elements both have a margin set on them and the two margins touch, the larger of the two remains and the smaller one disappears. Recall that this is known as margin collapsing.
+
+For position a div as absolute , any of its container should be positioned relative, with the top,left,rigth,bottom elements the div positions itself to the relative containter
+
+
+npm init
+npm install --save mysql express
+
+const express = require('express');
+
+const mysql = require('mysql');
+
+const app = express();
+
+app.listen('3000',()=>{
+console.log();
+});
+
+
+//create connection
+
+const db = mysql.createConnection({
+host : 'localhost',
+user:'root',
+password:'123456',
+database:'nodemysql',
+});
+
+//connection
+ db.connect((err)=>{console.log(error));
+ 
+ //create db
+ 
+ app.get('/createdb',(req,res)=>{
+ let query = 'CREATE DATABASE nodemysql';
+ db.query(sql,(err,result)=>{
+ if(err)throw err;
+ console.log(result);
+ res.send('database created');
+ });
+ 
+ // Insert post 1
+app.get('/addpost1', (req, res) => {
+    let post = {title:'Post One', body:'This is post number one'};
+    let sql = 'INSERT INTO posts SET ?';
+    let query = db.query(sql, post, (err, result) => {
+        if(err) throw err;
+        console.log(result);
+        res.send('Post 1 added...');
+    });
+});
+
+// Select single post
+app.get('/getpost/:id', (req, res) => {
+    let sql = `SELECT * FROM posts WHERE id = ${req.params.id}`;
+    let query = db.query(sql, (err, result) => {
+        if(err) throw err;
+        console.log(result);
+        res.send('Post fetched...');
+    });
+});
+
+// Update post
+app.get('/updatepost/:id', (req, res) => {
+    let newTitle = 'Updated Title';
+    let sql = `UPDATE posts SET title = '${newTitle}' WHERE id = ${req.params.id}`;
+    let query = db.query(sql, (err, result) => {
+        if(err) throw err;
+        console.log(result);
+        res.send('Post updated...');
+    });
+});
+
+
+MongoDB
+
+1.Database 
+2.Collections
+2. Documents
+
+Documents
+{"_id":
+"title":
+}
+
+MongoDB atlas - cloud service
+
+const URI = "connection_string"
+
+npm install mongoose
+
+mongoose - ODM library - Object Document Mapping library - wraps the standard mongodb api and gives easy api method
+
+we use Schemas and Modesl
+
+Schemas defines the structure of a type of data/document - 
+properties and property types
+-name (string),required
+-age(number)
+-bio(string),required
+
+create a model based on schema
+
+Model
+Model allows us to communicate with database collections
+
+
+
+Models folder - each collection with have its own JS file
+
+In model JS file
+`
+Schema = mongoose.Schema
+
+const blogSchema = new Schema({
+title:{
+type:String,
+required:true
+},
+snippet:{
+type:String,
+required:true,
+},
+body:{
+type:String,
+required:true,
+},{timestamps:true}
+)
+
+const Blog = mongoose.mode('Blog', blogSchema)
+module.exports = Blog
+`
+
+
+In app.js
+
+const mongoose = require('mongoose')
+const Blog = require("model file.js")
+
+`mongoose.connect(dbURI,{useNewUrlParser:true,userUnifiedTopology:true})
+.then((result)=>{
+console.log('connected to db')
+app.listen(3000}
+)
+.catch((err)=>console.log(err)
+
+//insert new document
+app.get('/add-new',(req,res)=>{
+const blog = new Blog({
+  title : 'new blog',
+  snippet:'about my new blog',
+  body:'more about my new blog',
+});
+
+// get all blogs
+app.get('/get-all',(req,res)=>{
+Blog.find().then((result)=>{res.send(result)}).catch((err)=>{...})
+  
+})
+
+// get single-block
+app.get('/get-single-block',(req,res)=>{
+Blog.findById('id').then((result)=>{res.send(result)}).catch((err)=>{...})
+  
+})
+
+
+
+react-redux is a library that provides bindings to use React and Redux together in an application
+
+Store -> Holds the state of your application
+
+Action --> describes what happend
+
+Reducer --> Ties the store and actions
+
+Three Principles:
+1. The state of your whole application is stored in an object tree within a single store [single object]
+2. only way to change the state is to emit an action , an object describing what happened [action is a object containing type property)
+3. To specify how the state tree is transformed by actions, you write pure reducers [previousState,action)==> newState
+
+
+Action is plain javascript object with the type property but can have other properities
+
+actionCreater --> a js function which simply returns an action --> so that change in action can take place in one place
+
+const BUY_CAKE = 'BUY_CAKE'
+
+function buyCake () {
+  return {
+    type: BUY_CAKE,
+    info: 'First redux action'
+  }
+}
+
+Reducer --> function that accepts state and action as arguement to return a new state --> usually the state will have default initialState
+
+const initialCakeState = {
+  numOfCakes: 10
+}
+
+const reducer = (state = initialState, action) => {
+ switch (action.type) {
+    case BUY_CAKE: return {
+	...state,
+      numOfCakes: state.numOfCakes - 1
+    }
+    case BUY_ICECREAM: return {
+      ...state,
+      numOfIceCreams: state.numOfIceCreams - 1
+    }
+    default: return state
+  }
+}
+
+Store :
+
+Holds the application state --> allow access to state via getState()
+
+Allows state to be updated via dispatch(action)
+
+registers listeners via subscribe(listener)
+
+Handles unregistering of listeners via the function returned by subscribe(listener)
+
+const redux = require('redux')
+const store = redux.createStore(reducer)
+console.log('Initial State ', store.getState())
+const unsubscribe = store.subscribe(() => { console.log('Updated State',store.getState())})
+store.dispatch(buyCake())
+store.dispatch(buyCake())
+store.dispatch(buyCake())
+
+Why we should have multiple reducers? --> when actions items becomes big , it is difficult and debug
+
+combine multiple reducers --> redux.combineReducers
+
+const rootReducer = combineReducers({
+cake:cakeReducer, // state.cake.numOfCakes
+iceCream:iceCreamReducer, // state.iceCream.numOfIceCreams
+})
+
+const store = createStore(rootReducer)
+
+
+Middleware
+
+1. suggested way to extend Redux with custom functionaliy
+2. Provides a third party extension point between dispatching an action, and the moment it reaches the reducer
+3. Use middleware for logging, crash reporting, performing asynchronous tasks etc
+
+npm install redux-logger
+
+const logger = reduxLogger.createLogger()
+
+redux.applyMiddleware
+
+createStore(rootReducer,applyMiddleware(logger))
+
+
+Asynchronous Actions
+
+ex:async api calls - datafetching
+
+state={
+loading:true,
+data:[],
+error:'',
+}
+
+Actions:
+
+FETCH_USERS_REQUEST  --> loading : true,
+FETCH_USERS_SUCCESS --> loading : false, data:data
+FETCH_USERS_FAILURE --> loading:false, error:error from API
+
+
+const fetchUsersSuccess = users => {
+  return {
+    type: FETCH_USERS_SUCCESS,
+    payload: users  // action can contain a payload
+  }
+}
+
+redux-thunk:
+
+define async action creators --> middleware
+
+const thunkMiddleware = require('redux-thunk').default
+
+//async action creators
+
+const fetchUsers=()=>{  // thunk enables you to return function instead of action
+
+return function(dispatch){        // doesn't have to be pure , use api calls and can dispatch other actions
+
+axios.get('url').then(response=>{
+dispatch(fetchUsersSuccess(response.data)
+}).catch(err)
+}
+}
+
+const store = createStore(rootReducer,applyMiddleware(thunkMiddleware))
+store.dispatch(fetchUsers)
+
+
+Vanilla Redux Async actions
+
+const redux = require('redux')
+const thunkMiddleware = require('redux-thunk').default
+const axios = require('axios')
+const createStore = redux.createStore
+const applyMiddleware = redux.applyMiddleware
+
+const initialState = {
+  loading: false,
+  users: [],
+  error: ''
+}
+
+const FETCH_USERS_REQUEST = 'FETCH_USERS_REQUEST'
+const FETCH_USERS_SUCCESS = 'FETCH_USERS_SUCCESS'
+const FETCH_USERS_FAILURE = 'FETCH_USERS_FAILURE'
+
+const fetchUsersRequest = () => {
+  return {
+    type: FETCH_USERS_REQUEST
+  }
+}
+
+const fetchUsersSuccess = users => {
+  return {
+    type: FETCH_USERS_SUCCESS,
+    payload: users
+  }
+}
+
+const fetchUsersFailure = error => {
+  return {
+    type: FETCH_USERS_FAILURE,
+    payload: error
+  }
+}
+
+const fetchUsers = () => {
+  return function (dispatch) {
+    dispatch(fetchUsersRequest())
+    axios
+      .get('https://jsonplaceholder.typicode.com/users')
+      .then(response => {
+        // response.data is the users
+        const users = response.data.map(user => user.id)
+        dispatch(fetchUsersSuccess(users))
+      })
+      .catch(error => {
+        // error.message is the error message
+        dispatch(fetchUsersFailure(error.message))
+      })
+  }
+}
+
+const reducer = (state = initialState, action) => {
+  console.log(action.type)
+  switch (action.type) {
+    case FETCH_USERS_REQUEST:
+      return {
+        ...state,
+        loading: true
+      }
+    case FETCH_USERS_SUCCESS:
+      return {
+        loading: false,
+        users: action.payload,
+        error: ''
+      }
+    case FETCH_USERS_FAILURE:
+      return {
+        loading: false,
+        users: [],
+        error: action.payload
+      }
+  }
+}
+
+const store = createStore(reducer, applyMiddleware(thunkMiddleware))
+store.subscribe(() => { console.log(store.getState()) })
+store.dispatch(fetchUsers())
+
+
+
+
+
+
+
+
+React-Redux:
+
+npm install redux react-redux
+
+import {Provider} from 'react-redux'
+
+<Provider store={store}>
+
+</Provider>
+
+selecting a single entity from the entire store can be done by a simple function say mapStateToProps or a useSelector Hook
+
+connect component connects the react-component to the redux store - so container can access the store value via props
+import {connect} from 'react-redux'
+
+export default connect(mapStateToProps,mapDispatchToProps)(CakeContainer)
+
+
+React Redux + Hooks
+
+react Redux v7.1 provides hook to subscribe and dispatch actions without connect()
+
+useSelector --> subscribe and mapStateToProps
+
+useDispatch --> provides a function called dispatch which can be used to dispatch actions
+

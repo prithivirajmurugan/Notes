@@ -1,0 +1,57 @@
+Flex Box
+
+display : flex 
+
+style the items when the flex container is styled
+
+if flex-direction : row
+main axis - horizontal 
+cross axis - vertical
+
+if flex-direction : column
+main axis - vertical 
+cross axis - horizontal
+
+if we want to style 
+
+main axis => justify-content : flex-start, center, space-between, space-around
+cross axis => align-item : stretch(discards the size), flex-start(keep the size), center
+
+
+align-content is only for multiline flex box containers => for example if flex-wrap:wrap
+
+flex-wrap : wrap;
+align-content:flex-start,flex-end,center,space-between,space-around;
+
+
+
+Flex box items property
+flex-shrink:0; // to make the item not shrink
+flex-grow:1 // item take all the extra space-around -> they grow proportionately
+
+if width is set -> flex grow takes the available empty spaces and add to width in the proportion set by flex-grow , if this needs to be over-written use flex-bssis
+flex-basis : 0 // consider it growing from 0 px
+
+
+
+
+align-self => over-rides the cross axis alignment of the item
+
+align-self : center,flex-end
+
+order: 3 changes the order of the container without changing in HTML
+
+
+
+we need container and the items -> flex-wrap for the responsiveness
+
+
+This is the shorthand for flex-grow, flex-shrink and flex-basis combined
+
+The second and third parameters (flex-shrink and flex-basis) are optional.
+
+default : 0 1 auto
+
+It is recommended that you use this shorthand property rather than set the individual properties
+
+ flex: 1 // all the flexible items be the same length, regardless of its content

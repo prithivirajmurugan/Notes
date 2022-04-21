@@ -1,0 +1,4 @@
+<View style={{ ...styles.card, ...props.style }}>{props.children}</View>  // own style with custom style
+
+
+iOS --> shadow... properties and Android --> elevation

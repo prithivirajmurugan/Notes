@@ -1,0 +1,696 @@
+TDD - express
+
+npm install -D jest supertest
+
+"test":"jest --watchAll"
+
+
+file => app.test.js
+
+const request = require('supertest')
+const app = require('./app')
+
+
+describe('Todos',()=>{
+it('GET/todos-->array todos',()=>
+{
+   return request(app).get('/todos').expect('Content-Type',/json/)
+									.expect(200)
+									.then(response)=>{
+										expect(response.body).toEqual(expect.arrayContaining([
+										expect.objectContaining({
+											id:expect.any(number),
+											name:expect.any(String),
+											completed:expect.any(Boolean),
+										})
+										])
+									}
+});
+it('GET/todos/id-->specific todo by ID',()=>
+{
+ return request(app).get('/todos/id').expect('Content-Type',/json/)
+									.expect(200)
+									.then(response)=>{
+										expect(response.body).toEqual(
+										expect.objectContaining({
+											id:expect.any(number),
+											name:expect.any(String),
+											completed:expect.any(Boolean),
+										})
+});
+it('GET/todos/id-->404 if not found',()=>
+{
+ return request(app).get('/apdsgfdsg').expect(404)
+});
+it('POST/todos-->created todo',()=>
+{
+ return request(app).post('/todos').send({
+	 name:'do dishes'
+ }).expect('Content-Type',/json/).expect(201).then((response)=>{
+										expect(response.body).toEqual(
+										expect.objectContaining({
+											id:expect.any(number),
+											name:'do dishes',
+											completed:expect.any(Boolean),
+										})
+ }
+});
+it('POST/todos-->validates request body',()=>
+{
+ return request(app).post('/todos').send({name:123}).expect(422);
+});
+})
+
+
+
+In todos
+npm install http-errors
+
+const createError = require('http-errors')
+
+return next(createError(404, 'Not-Found')
+
+
+
+
+
+TDD - three phases
+1. RED
+2. GREEN
+3. REFRACTOR
+
+
+beforeAll(()=>{})
+beforeEach(()=>{});
+//post, parsing the body
+app.use(express.json());
+
+//hash password
+
+npm install bcrypt
+
+const bcrypt = require('bcrypt') 
+bycrypt.has(req.body.password).then((hash)=>{})
+
+//router
+
+router = express.Router()
+
+app.UseRouter()
+
+async and await is used instead of promise
+
+
+new Promise((resolve,reject)=>{
+	function(){
+		resolve(results)
+		reject(new Error(err.message))
+	}
+});
+
+
+react-router-dom
+
+reduxjs/toolkit
+
+
+SafeAreaView
+Pressable
+NavigationContainer
+
+
+
+Event Queue
+
+Node is a runtime environment for executing JavaScript code outside a browser
+
+Node is highly scalable, data-intensive, and can create real-time apps. It is because of the Non-blocking (Asynchronous) form of operation.
+
+Node module system
+
+1.Global Object
+2. Modules - Every file in a node application is considered a module. The variables or functions defined inside the file are scopes. By default they are not visible outside the file, we need to explicitly export them (module.exports = get;)
+3. Module wrapper function
+
+(function (exports, require, module, __filename, __dirname){
+   '''
+      your codes goes here
+   '''
+})
+
+4. Middleware - A middleware is something that takes a request object and returns a response to the client - pipeline of processes - ex - express.json()
+
+5.Custom Middleware
+
+// Middleware - 2
+app.use(function(req, res, next){
+  console.log('Logging request...');
+  next(); // Pass control to the next middleware; otherwise stuck
+})// Middleware - 2
+app.use(authentication);function authentication(req, res, next){
+  console.log('Authentication Starts...');
+  next();
+}
+
+6. Built-in middleware
+
+app.use(express.urlencoded({extended: true})); — To receive form data in the request.
+
+app.use(express.static('public')); — To service static files in the web server, so if we create a public folder and use some static files, it can be accessed from the web.
+
+7. Third-party modules --> Like morgan
+
+8. Environmental modules
+
+console.log(`Node Environment : ${process.env.NODE_ENV}`)
+
+Three patterns to look out for writing asynchronous program
+
+1. Callbacks
+
+ getDirector(movie, (director) => {
+    console.log(`Movie - ${movie.Name} & Director - ${director}`)
+  })
+  
+2. Promises --> three stages, pending, resolve, reject
+
+const p = new Promise((resolve, reject) => {
+  // Do some async work
+  setTimeout(() => {
+    resolve(1); // Return Output - 1
+    // reject(new Error('Some error')) // Return Error
+}, 2000);
+});p
+  .then(result => console.log(`Result : ${result}`))
+  .catch(err => console.log(`Error : ${err.message}`))
+  
+promise.all[(p1, p2)] -- > resolves both promises
+promise.race[(p1, p2)] -- > resolves the promises which complete first, ignores the other
+
+
+3. Async/Await
+
+async function executeAll(){
+    try{
+        const movie = await getMovies(1) // returns a Promise
+        const director = await getDirector(movie.Name) // returns a Promise
+        console.log(movie.Name, director)
+    }catch(err){
+        console.log('Error :', err.message)
+    }
+}
+
+
+Mongooose
+
+1.Schema is like a blueprint which specifies, what to store on the database and in which format
+
+
+mongoose.connect('mongodb://localhost/MOVIELIBRARY', { useNewUrlParser: true, useUnifiedTopology: true })
+.then(() => console.log('Connected to MongoDB...'))
+.catch(err => console.error('Could not connect to MongoDB...', err));
+
+// blueprint of the document in database
+
+const movieSchema = new mongoose.Schema({
+    movieName : String,
+    director: String,
+    imdbRating: Number,
+    cast: [String],
+    releaseDate: Date,
+    genre: String,
+    sequel: Boolean
+});
+
+// Creating an Class based on the Schema (blueprint / template)
+const movieClass = mongoose.model('movieClass', movieSchema); // creates a collection with names movieClasses
+
+// Creating a new object (Instance of a class)
+const tenet = new movieClass({
+    movieName : "Tenet",
+    director: "Christopher Nolan",
+    imdbRating: 8,
+    cast: ["George David Washington, Robert Pattinson"],
+    releaseDate: new Date('2020-12-04'),
+    genre: "science-fiction",
+    sequel: false
+})
+
+const result = tenet.save();
+console.log('Document created', result)
+
+
+2. Create Synchoronous
+
+const movieClass = require('./movieSchema')
+
+// // CREATE
+// Function Declaration
+async function insertMovie(name_, director_, rating_, cast_, date_, genre_, sequel_){
+    const movieObject = new movieClass({
+        movieName : name_,
+        director: director_,
+        imdbRating: rating_,
+        cast: cast_,
+        releaseDate: date_,
+        genre: genre_,
+        sequel: sequel_
+    });
+    result = await movieObject.save() 
+    return result
+}
+
+// Function Call
+let output_1 = insertMovie('Inception', 'Christopher Nolan', 7, ['Leonardo DiCaprio', 'Cillian Murphy'], new Date('2010-07-16'),
+                         'science-fiction', false)
+output_1.then(function(response) {
+    console.log(response, 'output response')
+})
+
+4. Create Asynchronous
+
+const movieClass = require('./movieSchema')
+
+// // CREATE
+var theDarkKnight = new movieClass({movieName : "The dark knight",
+                            director: "Christopher Nolan",
+                            imdbRating: 8,
+                            cast: ["Christian Bale", "Heath Ledger"],
+                            releaseDate: new Date('2008-01-14'),
+                            genre: "superhero",
+                            sequel: true})
+
+console.log('DB Updated');
+theDarkKnight.save()
+
+5. Read Data is strictly synchronised
+
+const movieClass = require('./movieSchema')
+
+// // READ 
+// Function Declaration - Variant 1
+async function fetchMovies(){
+    const movieObjects = await movieClass
+        .find({sequel: false}) // Find movies with no sequel
+        .limit(10) // Display upto 10 fields
+        .sort({imdbRating: 1}) // Sort based on imdb rating
+        .select({movieName:1, director:1} // Select only the fields specified here,  remove select to list all fields in the document
+        ); 
+    return movieObjects
+}
+
+// Function Call
+let read_output_ = fetchMovies();
+read_output_1.then(function(response) {
+    console.log(response, 'output response')
+})
+
+// Function Declaration - Variant 3
+async function fetchMovies_Comparision(){
+    // eq (equal)
+    // ne (not equal)
+    // gt (greater than)
+    // gte (greater than or equal to)
+    // lt (less than)
+    // lte (less than or equal to)
+    // in
+    // nin (not in)
+    
+    // Query here
+    const movieObjects = await movieClass
+        .find({sequel: { $eq: true }}) // Fetches the movies with sequel equal to true
+        // .find({imdbRating : { $gte: 5, $lte: 9 }, sequel : { $eq: true}}) // Fetches the movies with imdb rating > 5 & imdb rating < 9, and sequel to be true
+        // .find({imdbRating : { $in:[7,8,9] }}) // Fetches the movies with imdb rating with 7,8,9
+
+        .limit(10) 
+        .sort({imdbRating: 1})
+        .select({movieName:1, director:1});
+        return movieObjects
+}
+
+// Function Call
+let read_output_2 = fetchMovies_Comparision();
+read_output_2.then(function(response) {
+    console.log(response, 'output response')
+})
+
+// Function Declaration - Variant 3
+async function fetchMovies_Logical(){
+    // or
+    // and
+    
+    // Query here
+    const movieObjects = await movieClass
+        .find()
+        // .find({ sequel: /^true/ }) // Regex - Self explanatory
+
+        // .or([ {sequel: false}, {imdbRating: 8} ]) // Fetches the movie with sequel false or imdb rating = 8
+        .and([ {sequel: false}, {imdbRating: 8} ]) // Fetches the movie with sequel false and imdb rating = 8
+
+        .limit(10) 
+        .sort({imdbRating: 1})
+
+        return movieObjects
+}
+
+// Function Call
+let read_output_3 = fetchMovies_Logical();
+read_output_3.then(function(response) {
+    console.log(response, 'output response')
+})
+
+// Function Declaration - Variant 4
+async function fetchMovies_Regex(){    
+    // Query here
+    const movieObjects = await movieClass
+        
+        .find({ director: /^Quentin/ })         // Starts with Quentin 
+        // .find({ director: /tarantino$/i })   // Ends with tarantino
+        // .find({ director: /.*Nolan.*/i })    // Contains Nolan
+        
+        .limit(10) 
+        .sort({conversationId: 1})
+        .select({}); // Select all
+        return movieObjects
+}
+
+// Function Call
+let read_output_4 = fetchMovies_Regex();
+read_output_4.then(function(response) {
+    console.log(response, 'output response')
+})
+
+// Function Declaration - Variant 5
+async function fetchMovies_Count(){
+    const movieObjects = await movieClass
+        // .find({sequel: false, imdbRating : 8})
+        .find({sequel: false,})
+        .limit(10)
+        .sort({imdbRating: 1})
+        .countDocuments();
+    
+        return movieObjects
+}
+
+// Function Call
+let read_output_5 = fetchMovies_Count();
+read_output_5.then(function(response) {
+    console.log(response, 'output response')
+})
+
+6. Update Synchoronous
+
+const movieClass = require('./movieSchema')
+
+// // UPDATE
+// Update Array
+async function update_MovieCast(movieName, newCast){
+
+    const movieObjects = await movieClass.collection.findOneAndUpdate(
+        {movieName: movieName}, 
+        { 
+            $push: {
+                cast: `${newCast}`},
+        }
+        );
+    return movieObjects
+}
+
+// Function Call
+let update_output_1 = update_MovieCast('Inception', 'Michael Caine')
+update_output_1.then(function(response) {
+    console.log(response, 'output response')
+})
+
+
+// Update Boolean and Number
+async function update_SequelAndImdbRating(movieName, sequel_new, rating){
+
+    const movieObjects = await movieClass.collection.findOneAndUpdate(
+        {movieName: movieName}, 
+        { 
+            $set: {
+                sequel: sequel_new,
+                imdbRating: rating
+            }
+        }
+        );
+    return movieObjects
+}
+
+// Function Call
+let update_output_2 = update_SequelAndImdbRating('The Nun', true, 8.5);
+update_output_2.then(function(response) {
+    console.log(response, 'output response')
+})
+
+7. Update Asynchronous
+
+const movieClass = require('./movieSchema')
+
+// // UPDATE
+// Function to Update Array
+function update_MovieCast(movieName, newCast){
+
+    movieClass.collection.findOneAndUpdate(
+        {movieName: movieName}, 
+        { 
+            $push: {
+                cast: `${newCast}`},
+        }
+        );
+    console.log('DB Updated');
+}
+
+// Function Call
+update_MovieCast('Tenet', 'Michael Caine') // Update new cast in the movie tenet
+
+// Function to Update Boolean and Number
+function update_SequelAndImdbRating(movieName, sequel_new, rating){
+
+    movieClass.collection.findOneAndUpdate(
+        {movieName: movieName}, 
+        { 
+            $set: {
+                sequel: sequel_new,
+                imdbRating: rating
+            }
+        }
+        );
+    console.log('DB Updated');
+}
+
+// Function Call
+update_SequelAndImdbRating('The Nun', true, 8.5)
+
+8. Delete Synchoronous
+
+const movieClass = require('./movieSchema')
+
+// // DELETE
+// Function Declaration
+async function deleteMovie(name){
+    const movieObjects = await movieClass.deleteOne( {movieName: name});
+    return movieObjects
+}
+
+// Function Call
+let delete_output = deleteMovie('The Nun');
+delete_output.then(function(response) {
+    console.log(response, 'output response')
+})
+
+9. Delete (Asynchronous)
+
+const movieClass = require('./movieSchema')
+
+// // DELETE
+// Function Declaration
+async function deleteMovie(name){
+    const movieObjects = await movieClass.deleteOne( {movieName: name});
+    console.log('Document Deleted', name)
+}
+
+// Function Call
+deleteMovie('Tenet');
+
+
+9. Validation
+
+// Handling rejected promises here.
+try{
+   result = await movieObject.save()
+   return result
+}catch (ex){
+   console.log('Error in Promises', ex.message)
+}
+
+10. Built in Validations
+
+// String Validators
+movieName : {   type: String,   required: true,   minlength: 2,   maxlength: 255,
+   // match: /pattern/ // Some Regex Pattern
+   },genre: {   type: String,   required: true,   enum: ['horror', 'Action', 'science-fiction', 'supernatural-   horror', 'comedy', 'romance', 'adventure']
+// Input must be one of them enumerated above.
+},// Number Validators
+releaseDate: Date,imdbRating: {   type: Number,   min: 0,   max: 10,   required: function() { return this.releaseDate(); } 
+   // Conditionally make the property required}
+11. custom validators
+
+cast: {   type: Array,   validate: {   validator: function(v){      return v && v.length > 2; 
+      // Should not be a null and should have atleast two cast},message: 'The Cast must contain atleast two character names'
+}
+}
+
+11. Async Validators
+
+cast: {  type: Array,  validate: {  isAsync: true,  validator: function(v, callback){  // Do some async work or here I simulated timeout  setTimeout(()=>{      const result = v && v.length > 2; 
+      callback(result)
+  }, 5000);
+},
+message: 'The Cast must contain atleast two character names,
+}
+}
+
+12. Authentication --> identifying the user who they claim to be and Authorization --> determining if the user has the right permission to perform the given operation.
+
+
+13. Loadash --> to pick fields from the body
+router.post('/', async (req, res) => {
+  const { error } = validateUser(req.body)
+  if (error) return res.status(400).send(error.details[0].message);  let user = await userClass.findOne({email: req.body.email})
+  if (user) return res.status(400).send('User Already Registered.');  user = new userClass(_.pick(req.body, ['name', 'email', 
+                                         'password']));
+  try{
+    await user.save()
+    res.send(_.pick(user, ['_id', 'name', 'email']))
+  }catch (ex){
+    console.log('Error in Promises', ex.message)
+    res.status(400).send( ex.message)
+}
+})
+
+14. Hashing password
+
+SALT — Random string added before or added password.
+
+const salt = await bcrypt.genSalt(10);
+user.password = await bcrypt.hash(user.password, salt);
+
+15. Authenticating user
+
+router.post('/', async (req, res) => {
+  const { error } = validateUser(req.body)
+  if (error) return res.status(400).send(error.details[0].message);  let user = await userClass.findOne({email: req.body.email})
+  if (!user) return res.status(400).send('Invalid Email.');  const validPassword = await bcrypt.compare(req.body.password, 
+                                             user.password)
+  if (!validPassword) return res.status(400).send('Invalid 
+                                                   Password.');
+  
+  try{
+    res.send(true) // Sending True
+  }catch (ex){
+  console.log('Error in Promises', ex.message)
+  res.status(400).send( ex.message)
+}
+})
+
+16. JSON Web Token (JWT) - long string that identifies the user
+
+Payload section --> digital signature property i.e which is created based on the content of the payload body along with a secret key which is only available on the server.
+
+17.  Generating JWT 
+
+const jwt = require('jsonwebtoken');
+	1.The token secret
+    2.The piece of data to hash in the token
+    3.The token expire time
+	
+The token secret - long random string used to encrypt and decrypt the data- stored in web-server
+
+ require('crypto').randomBytes(64).toString('hex') //crypto built in module
+ 
+ TOKEN_SECRET=09f26e402586e2faa8da4c98a35f1b20d6b033c60...  // in .env file
+ 
+ 
+ //readint dotenv
+ 
+const dotenv = require('dotenv');
+
+// get config vars
+dotenv.config();
+
+// access config var
+process.env.TOKEN_SECRET;
+
+// an example of signing the token
+
+function generateAccessToken(username) {
+  return jwt.sign(username, process.env.TOKEN_SECRET, { expiresIn: '1800s' });
+}
+
+//post
+app.post('/api/createNewUser', (req, res) => {
+  // ...
+
+  const token = generateAccessToken({ username: req.body.username });
+  // res.header('x-auth-jwtoken', token).send(_.pick(user, ['_id', 'name', 'email']))
+  res.json(token);
+
+  // ...
+});
+
+
+//Authenticate using middleware
+
+const jwt = require('jsonwebtoken');
+
+function authenticateToken(req, res, next) {
+  //const token = req.header('x-auth-token');
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+
+  if (token == null) return res.sendStatus(401)
+
+  jwt.verify(token, process.env.TOKEN_SECRET as string, (err: any, user: any) => {
+    console.log(err)
+
+    if (err) return res.sendStatus(403)
+
+    req.user = user
+
+    next()
+  })
+}
+
+app.get('/api/userOrders', authenticateToken, (req, res) => {
+  // executes after authenticateToken
+  // ...
+})
+
+
+//client can save it in cookie
+
+// get token from fetch request
+const token = await res.json();
+
+// set token in cookie
+document.cookie = `token=${token}`
+
+//sending the user to the client
+
+router.get('/me', auth, async(req, res) => {
+   const user = await userClass.findById(req.user._id).select('-
+password')
+   res.send(user);
+});
+
+winston for error logging directly in the mongoDB
+
+
+
+
+
+
+
+

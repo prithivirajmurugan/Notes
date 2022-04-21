@@ -1,0 +1,76 @@
+Scalability
+
+Horizontal and Vertical system
+
+1. Single point of failure
+2. Seperating the database -- can be scaled individually - Vertical scaling and Horizontal scaling (load balancer) (stateless webserver)
+3. FailOver strategies --> own data centers, Cloud services, Fully managed 'serverless' services
+4. Scaling database --> Cold StandBy service(S3)(periodic backup) , Warm Standby (Replication), Hot StandBy (writing simulatenously) (distribution of database)
+5. Database Sharding -->  horizontal partition of the database , each shard has its own backup , Key-Value(minimize join operation), NoSQL database
+6. mongos --> how to distribute the data in the replicaset --> config server
+7. Cassandra --> Node --> loop --> eventual consistency
+8. Celebrity problem - Hotspots
+9. Examples : MongoDB, DynamoDB, Cassandra, HBase
+10. Denormalisation of data (all data in one table) --> join of normalised data --> more storage place, one lookup, updates are hard
+11. Normalised data --> data seperated accross table --> less storage space, more lookups, updates in one place
+12. Data Lake --> data into text files into big distributed storage system like Amazon S3, big data and unstructured data --> Amazon Glue creates schema for that data --> cloud based features let you query data Amazon Athena, Amazon Redshift
+13 . ACID Compliance - Atomicity, Consistency, Isolation, Durability
+14. CAP theory - Consistency , Availability and Partition-Tolerance , any two but not three.
+15. Service Level Agreements - 
+16 Cachin Technologies --> caching layer --> clients hash requests to a given server, more reads than write, expiration policy, Hotspot problem, Cold-Start(if caching is empty during start)(artificial request)
+17 Eviction policy - Least Recently Used(LSU) - D-Linked List, LFU (Least Frequently Used), FIFO (First In First Out)
+18. memcached - In-memory key/value store, Open source
+19. Redis - more feature, snapshots, replication, transactions, pub/sub, complex
+20. Ncache - made for .NET, Java, Node.js
+21. Ehcache - Java, Just a distributed Map really
+22. ElastiCache -- AWS, Fully-managed Redis or Memcached
+23. CDN --> Geographically distributed, Edge location - expensive
+25. AWS cloudFront, Google Cloud CDN, Microsoft Azure CDN, Akamai, CloudFlare
+26. Resiliency --> what happens when things go wrong, entire data center (AZ), entire region
+27. Geo-routing --> between NA, EU, IN, multiple racks, availability zonesc, overprovisioning, balance budget or offsite backup
+28. Distributed Storage --> unstructured data --> scalable, secure, fast object storage --> data lakes, websites backups, big data --> Highly durable --> S3 offers 99.99999999% durable (percentile durability)
+29. SLA --> for durability and latency
+30. Amazon S3 -> pay as you go, Different tiers, Hot/Cool/Cold storage
+31. Google Cloud Storage
+32. Microsoft HDFS --> self hosted
+33. Consumer-oriented storage - DropBox
+34. HDFS --> Files are broken into blocks and replicated across your cluster(rack aware), master node - name node has metadata(name,replicas, location), reads data from nearest replica, write across different racks, high availability
+35. Single master databases favours consistency and partition tolerance but compromises availability
+
+Algorithm and DataStructure
+
+1. Single Linked Lists -> grow dynamically -> Access O(n) -> insert at head O(1) and insert at end O(n) --> sequential access --> less memory
+2. D-linked List --> next and previous pointer --> Access O(n) but faster since accessed in both end --> insert at front or back O(1) --> Useful for Deques --> MRU
+3. Binary Tree --> left and right child --> BST -> ordered binary search tree --> Access is O(log(n)) on average and O(n) worst case --> insert/delete also O(log(n)) --> in-order traversals
+4. Hash Table --> Hash function maps some key to a bucket, then that bucket is searched for key's value --> Hash Collision (finding multiple key in one bucket) -->  insert, lookups and deletion are O(1) but O(n) is worst case --> fast lookup
+5. consists of nodes and arbitrary edges, Breadth First Search and Depth-First Search --> Access is O(V+E) --> BFS can be parallelized
+6. Search Algorithm --> Linear search(not sorted), binary search(sorted)(O(logn)
+7. Sort Algorithm --> Insertion sort O(n) and worst case O(n squared), Merge sort O(nlogn), quick sort O(nlog(n)), Bubble sort O(n squared)
+8. Information retreival -->forward index (document ID, position tuples)
+9. Term Frequecy and Inverse Document Frequency --> how often , how often in the entire set of frequency = Term frequecy / Document Frequency --> how unique the term is
+10. PageRank
+
+Working with Big Data
+1. Message queues as scaling tool --> Decouples producer and consumers , Amazon SQS service, single-consumer vs pub/sub, difference for streaming data
+2. Apache Spark --> distributed processing framework for big data, in-memory processing, optimizing query exceution, Scala, Java, Python and R, supports code reuse, machine learning, graph processing, can be used for streaming
+3. Hybrid Cloud --> Public and Private Cloud , Multi-Cloud
+
+
+Working backwards
+Define scaling requirements
+Define latency requirements
+Define availability requirements
+Think out loud
+Give interviews chance to direct you in correct direction
+identify bottlenecks , maintainance , costs and concerns
+Need perseverance
+
+
+
+Client --> web servers --> recommendation servers --> Purchase service + memcached || Item similarity service || memcached --> purchased DB
+
+
+    Any live cell with fewer than two live neighbors dies, as if caused by under population.
+    Any live cell with two or three live neighbors lives on to the next generation.
+    Any live cell with more than three live neighbors dies, as if by overpopulation.
+    Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.

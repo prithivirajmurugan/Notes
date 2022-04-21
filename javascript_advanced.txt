@@ -1,0 +1,44 @@
+const debounce = (func,delay)=>{
+  let inDebounce
+  return function(){
+    const context = this;
+    const args = arguments; // arguments object in function
+    clearTimeout(inDebounce);
+    inDebounce = setTimeout(()=>{func.apply(context,args)}, 10);
+  }
+}
+
+
+const logging = ()=>{
+  console.info("Hey!! it is ",new Date().toUTCString());
+}
+
+const debounceFn=debounce(logging,1000);
+debounceFn(); // will be executed
+debounceFn(); // won't be executed
+debounceFn(); // won't be executed
+setTimeout(debounceFn,3000); // this will be executed
+
+
+const throttle = (func,limit)=>{
+  let inThrottle;
+  return function(){
+    const context = this;
+    const args = arguments;
+    if(!inThrottle){
+      func.apply(context,args);
+      inThrottle=true;
+      setTimeout(()=>{inThrottle=false}, limit);
+    }
+  }
+}
+
+
+const logging = ()=>{
+  console.info("Hey!! it is ",new Date().toUTCString());
+}
+
+const throttleFn = throttle(logging,1000);
+throttleFn(); // will be executed
+throttleFn(); // will not be executed
+setTimeout(throttleFn,3000) // will be executed

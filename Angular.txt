@@ -1,0 +1,346 @@
+Observable and Observer
+
+1. Handle data
+2. Handle Error
+3. Handle Completion
+
+Creating a observable:
+
+import { interval,unsubscribe } from 'rxjs';
+
+private firstObsSubscription:Subscription;
+ngOnInit(){
+ this.firstObsSubscription= interval(period:1000).subscribe(count=>{
+  console.log(count);
+ });
+}
+
+ngOnDestroy(){
+this.firstObsSubscription.unsubscribe();
+}
+
+To prevent the observable we should store the subscription and should be unsubscribed
+
+
+Custom Observable:
+
+import { Observable } from 'rxjs';
+
+private firstObsSubscription:Subscription;
+ngOnInit(){
+ const customIntervalObservable=Observable.create(observer => {
+   let count = 0;
+   setInterval(()=>{
+   observer.next(count);
+   count++;
+   }
+ },
+ 1000)
+ 
+ 
+ this.firstObsSubscription = customIntervalObservable.subscribe(dataFn,errFn,completeFn)
+ 
+}
+
+ngOnDestroy(){
+this.firstObsSubscription.unsubscribe();
+}
+
+Operators:
+
+Used to transform data from the observable, sits between observable and observer
+
+import { map } from 'rxjs/operators';
+customIntervalObservable.pipe(map(mapFn)).subscribe()
+
+
+Subjects:
+
+use Subjects instead of eventEmitters to pass data
+
+
+Angular Forms:
+
+Provides the javascript values of the HTML form and easily work with it
+
+Two approaches:
+1. Template-Driven approaches
+2. Reactive Approach
+
+
+Dynamic components:
+
+Components that are created in run-time
+
+loaded programmatically:
+1. ngIf
+2. Dynamic Component Loader - component created and added to DOM via code
+
+
+ComponentFactoryResolver
+const alertCmpFactory = this.componentFactoryResolver.resolveComponentFactory(AlertComponent);
+
+
+Modules:
+
+Grouping of angular building blocks together(components, directives , services)
+
+AppModule is necessary but may be split into multiple modules
+@NgModule({})
+declarations --> components
+imports --> other components
+providers --> services
+bootstrap --> starting the app, component which is present in index.html
+entry component --> component which are created programmatically
+
+Feature Modules - ProductModule, OrderModule etc..
+
+splitting angular app into the corresponding modules 
+
+
+Shared modules:
+
+for shared component and directives should be declared in shared module and exported
+
+Core Modules:
+
+For providing application wise services. should be added in providers array
+
+
+Lazy loading:
+
+
+ {
+    path: "recipes",
+    loadChildren: () =>
+      import("./recipes/recipes.module").then(m => m.RecipesModule)
+  },
+
+Preloading Lazy-Loaded Code:
+
+@NgModule({
+  imports: [RouterModule.forRoot(appRoutes,{preloadingStrategy:PreloadAllModules})],
+  exports: [RouterModule]
+})
+
+NgRx --> application state management in bigger angular applications.
+
+npm install --save @ngrx/store
+
+reducers:
+import * as ShoppingListActions from './shopping-list.actions';
+const InitiateState = {}
+
+export function shoppingListReducer(state = InitiateState,action:ShoppingListActions.AddIngredient)
+{
+ switch(action.type){
+  case ShoppingListActions.ADD_INGREDIENT : return {...state, ingredients:[...state.ingredients,action.payload]};
+  default: return state
+ }
+}
+
+Action.types.ts:
+
+
+import {Action} from '@ngrx/store'
+
+export const ADD_INGREDIENT = 'ADD_INGREDIENT';
+
+export class AddIngredient implements Action {
+    readonly type = ADD_INGREDIENT;
+	//payload:Ingredient;
+	
+	constructor(public payload:Ingredient[]){}
+}
+
+
+In AppModule
+
+import {StoreModule} from '@ngRx/store';
+
+
+imports:[
+...,
+StoreModule.forRoot({shoppingList:shoppingListReducer}), //store.shoppingListReducer.ingredients
+...,
+]
+
+In component:
+
+constructor(private store:Store<{shoppingList:{ingredients:Ingredient[]}}>){}
+
+ngOnInit(){
+this.ingredients : Observable<{ingredients:Ingredient[]}> = this.store.select('shoppingList');
+
+}
+
+in html template
+
+ingredients | async
+
+
+Dispatching an action:
+
+this.store.dispatch(new ShoppingListActions.AddIngredient(newIngredient));
+
+Multiple Actions:
+
+export type ShoppingListActions = ADD_INGREDIENT | ADD_INGREDIENTS
+
+
+NgRX Effects for side effects
+
+npm install @ngrx/effects
+
+
+Effect is an ongoing observable stream and should never die
+
+of --> operator to create a new observable
+
+
+@ngRx/router-store --> actions which can be disposed when there is change in routing
+
+
+Angular Universal --> pre-render the pages in server instead of rendering in browser(NextJS)
+
+@nguniversal/express-engine --clientProject
+
+Angular animations
+
+Offline capabilities using Service workers
+
+adding service worker ==> additional thread which is decoupled from HTML page , manages all pages of given scope, and listen the ongoing requests and caches it.
+
+ng add @angular/pwa
+ngsw-config.json
+
+
+ng new --help
+
+Differential Loading
+
+
+Project Structure 
+
+each module is in its own folder which also contains components folder and services folder which contains the nested components inside them
+
+Prettier --> code formatting
+
+Language Server Protocol --> autocomplete, rich developer experience
+
+RouterModule.forChild --> for registering routes for child module
+
+
+Reactive Forms Modules:
+
+form: FormGroup;
+
+constructor(private fb: FormBuilder) {
+  }
+  ngOnInit(): void {
+    this.initializeForm();
+  }
+  initializeForm(): void {
+    this.form = this.fb.group({
+      username: ['',Validators.required],
+      email: ['',Validators.required],
+      password: ['',Validators.required]
+    })
+  }
+  onSubmit(): void{
+    console.log(this.form.value);
+  }
+  
+In template :
+
+ <form [formGroup]="form" (ngSubmit)="onSubmit()">
+ <input type="text" class="form-control form-control-lg" placeholder="Username" formControlName="username" />
+ 
+ 
+ ngRx 
+ 
+ Include diagram from the ngRx page
+ 
+ 
+ Action
+ 
+ {
+   type: '[Auth API] Login Success'
+ }
+ 
+ 
+ export const register = createAction(
+  ActionTypes.REGISTER,
+  props<{ username: string;password:string,email:string}>() )
+)
+
+In component.ts:
+
+ constructor(private fb: FormBuilder,private store:Store) {
+  }
+  
+onSubmit(): void{
+    console.log(this.form.value);
+    this.store.dispatch(register(this.form.value))
+  }
+  
+In app.module.ts
+
+import { StoreModule } from '@ngrx/store';
+
+@NgModule({
+    imports: [
+      BrowserModule,
+      StoreModule.forRoot({ books: booksReducer, collection: collectionReducer })]
+
+
+In reducer.ts
+
+import { createReducer, on , Action} from "@ngrx/store";
+
+cconst _authReducer = createReducer(initialState, on(registerAction, (state): AuthStateInterface => {
+  return {
+    ...state,
+    isSubmitting: true
+  }
+}))
+
+export function authReducers(state: AuthStateInterface, action: Action) {
+  return _authReducer(state,action)
+}
+
+In auth.module.ts
+
+@NgModule({
+  declarations:[RegisterComponent],
+  imports: [CommonModule,
+    RouterModule.forChild(routes),
+    ReactiveFormsModule,
+    StoreModule.forFeature('auth', authReducers),
+  ]
+})
+
+In selectors.ts
+
+import { AuthStateInterface } from '../../auth/types/authState.interface';
+
+export interface AppStateInterface{
+  auth:AuthStateInterface
+}
+
+export const authFeatureSelector = createFeatureSelector<AuthStateInterface>('auth');
+
+export const isSubmittingSelector = createSelector(authFeatureSelector, (authState: AuthStateInterface) => authState.isSubmitting);
+	  
+	  
+In component.ts
+
+this.isSubmitting$ = this.store.pipe(select(isSubmittingSelector))
+
+In html
+
+[disabled] = "isSubmitting$ | async"
+
+
+By default in angular any call with httpclient doesn't work without subscribing 
+	  

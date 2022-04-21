@@ -1,0 +1,979 @@
+export no_proxy=$no_proxy,*.docker.internal
+
+%WinDir%\System32\Drivers\Etc
+npm install typescript ts-node-dev express @types/express
+
+tsc --init --> to create tsconfig.json
+
+
+Ingress controller
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-service
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+spec:
+  rules:
+    - host: ticketing.dev
+      http:
+        paths:
+          - path: /api/users/?(.*)
+            backend:
+              serviceName: auth-srv
+              servicePort: 3000
+
+email-name validation
+
+npm install --save express-validator
+
+import { body,validationResult } from 'express-validator' // for body of validator
+
+
+router.post('/api/users/signup',
+[body('email').isEmail().withMessage('Email must be valid'),body('password').trim().isLength({min:4,max:20})
+.withMessage('Password must be valid')],
+(req:Request,res:Response)=>{
+ const errors = validationResult(req);
+ if(!errors.isEmpty())
+ {
+ return res.status(400).send(errors.array());
+ }
+ 
+})
+
+the error sent from backend to frontend should be of , same determined format
+
+error-handling is done using middleware
+
+export const errorHandler = (err:Error,req:Request,
+                             res:Response, 
+							 next:NextFunction)=>
+							 {
+							 
+				}
+				
+Mongoose User Schema
+
+import mongoose from 'mongoose';
+
+// An interface that describes the properties
+// that are requried to create a new User
+interface UserAttrs {
+  email: string;
+  password: string;
+}
+
+// An interface that describes the properties
+// that a User Model has
+interface UserModel extends mongoose.Model<UserDoc> {
+  build(attrs: UserAttrs): UserDoc;
+}
+
+// An interface that describes the properties
+// that a User Document has
+
+interface UserDoc extends mongoose.Document {
+  email: string;
+  password: string;
+}
+
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true
+  },
+  password: {
+    type: String,
+    required: true
+  }
+},
+{   // to change the property of JSON returned
+    toJSON: {
+      transform(doc, ret) {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.password;
+        delete ret.__v;
+      },
+    },
+  }
+);
+userSchema.statics.build = (attrs: UserAttrs) => {
+  return new User(attrs);
+};
+
+const User = mongoose.model<UserDoc, UserModel>('User', userSchema);
+
+export { User };
+
+
+Authentication has no real solution, unsolved problem
+
+Cookies
+1. Transport mechanism
+2. Moves any kind of data between browser and server
+3. Automatically managed by the browser
+
+JWT's
+1. Authentication/Authorization mechanism
+2. Stores any data we want
+3. We have to manage it manually
+
+cookie managing library
+
+npm install cookie-session 
+
+kubectl create generic jwt-secret --from-literal=jwt=asdf
+
+toJSON(){} method in an object can change the way javascript stringifies to JSON
+
+
+  {
+    toJSON: {
+      transform(doc, ret) {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.password;
+        delete ret.__v;
+      }
+    }
+
+Code to add property to the global types/express
+
+declare global {
+  namespace Express {
+    interface Request {
+      currentUser?: UserPayload;
+    }
+  }
+}
+
+
+Testing 
+
+npm install --save-dev @types/jest @types/supertest jest ts-jest supertest mongodb-memory-server
+
+
+npm install --only=prod
+
+"test":"jest --watchAll --no-cache"
+
+Initialization
+
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import mongoose from 'mongoose';
+import request from 'supertest';
+import { app } from '../app';
+
+declare global {
+  namespace NodeJS {
+    interface Global {
+      signin(): Promise<string[]>;
+    }
+  }
+}
+
+let mongo: any;
+beforeAll(async () => {
+  process.env.JWT_KEY = 'asdfasdf';
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+  mongo = new MongoMemoryServer();
+  const mongoUri = await mongo.getUri();
+
+  await mongoose.connect(mongoUri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
+});
+
+beforeEach(async () => {
+  const collections = await mongoose.connection.db.collections();
+
+  for (let collection of collections) {
+    await collection.deleteMany({});
+  }
+});
+
+afterAll(async () => {
+  await mongo.stop();
+  await mongoose.connection.close();
+});
+
+global.signin = async () => {
+  const email = 'test@test.com';
+  const password = 'password';
+
+  const response = await request(app)
+    .post('/api/users/signup')
+    .send({
+      email,
+      password
+    })
+    .expect(201);
+
+  const cookie = response.get('Set-Cookie');
+
+  return cookie;
+};
+
+Client :
+
+npm install react react-dom next
+
+module.exports = {
+  webpackDevMiddleware: (config) => {
+    config.watchOptions.poll = 300;
+    return config;
+  },
+};
+
+ "dev": "next"
+ 
+ Applying Global css in nextJS
+ 
+ import 'bootstrap/dist/css/bootstrap.css';
+
+export default ({ Component, pageProps }) => {
+  return <Component {...pageProps} />;
+};
+
+Custom hook
+
+import axios from 'axios';
+import { useState } from 'react';
+
+export default ({ url, method, body, onSuccess }) => {
+  const [errors, setErrors] = useState(null);
+
+  const doRequest = async () => {
+    try {
+      setErrors(null);
+      const response = await axios[method](url, body);
+
+      if (onSuccess) {
+        onSuccess(response.data);
+      }
+
+      return response.data;
+    } catch (err) {
+      setErrors(
+        <div className="alert alert-danger">
+          <h4>Ooops....</h4>
+          <ul className="my-0">
+            {err.response.data.errors.map(err => (
+              <li key={err.message}>{err.message}</li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+  };
+
+  return { doRequest, errors };
+};
+
+
+LandingPage.getInitialProps(){} // simple function not a component
+
+it returns a data which gets injected into the Component as props
+
+when server side rendering it sends to inside the pod and hence no port is configured and we will get error message
+
+ 1. Find the url from which to communicate
+ 2. Find a way to add cookie
+namespace --> kubectl get namespace
+
+cross namespace communication
+
+http://NAMESERVICE.NAMESPACE.svc.cluster.local
+
+kubectl get service -n ingress-nginx
+
+http://ingress-nginx.ingress-nginx.svc.cluster.local
+
+External NameService --> can be used
+
+Navigating from another page in same application , then getInitialProps will be executed in the client (browser)
+
+To find server or client env inside getInitialProps
+
+if (typeof window === 'undefined')
+{
+      const { data } = await axios.get(
+      'http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/users/currentuser',
+      {
+        headers: {
+          Host: 'ticketing.dev',
+        },
+      }
+    );
+
+    return data;
+	
+}
+else
+{
+ // in browser
+}
+
+
+App component --> common to all
+
+import 'bootstrap/dist/css/bootstrap.css';
+import buildClient from '../api/build-client';
+import Header from '../components/header';
+
+const AppComponent = ({ Component, pageProps, currentUser }) => {
+  return (
+    <div>
+      <Header currentUser={currentUser} />
+      <Component {...pageProps} />
+    </div>
+  );
+};
+
+AppComponent.getInitialProps = async appContext => {
+  const client = buildClient(appContext.ctx);
+  const { data } = await client.get('/api/users/currentuser');
+
+  let pageProps = {};
+  if (appContext.Component.getInitialProps) {
+    pageProps = await appContext.Component.getInitialProps(appContext.ctx);
+  }
+
+  return {
+    pageProps,
+    ...data
+  };
+};
+
+export default AppComponent;
+
+NPM organisation
+
+1. Public registry
+2. Organisation
+3. Private registry
+
+npm publish --access public
+
+npm update @sgtickets/common
+
+
+
+Event Bus
+
+NAT Streaming Server
+
+Nats-depl config
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nats-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nats
+  template:
+    metadata:
+      labels:
+        app: nats
+    spec:
+      containers:
+        - name: nats
+          image: nats-streaming:0.17.0
+          args:
+            [
+              '-p',
+              '4222',
+              '-m',
+              '8222',
+              '-hbi',
+              '5s',
+              '-hbt',
+              '5s',
+              '-hbf',
+              '2',
+              '-SD',
+              '-cid',
+              'ticketing',
+            ]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nats-srv
+spec:
+  selector:
+    app: nats
+  ports:
+    - name: client
+      protocol: TCP
+      port: 4222
+      targetPort: 4222
+    - name: monitoring
+      protocol: TCP
+      port: 8222
+      targetPort: 8222
+
+Kubernetes - port forwarding
+
+kubectl port-forward nats-depl-xxxxxx 4222:4222
+
+Internals:
+
+client library --> node-nats-streaming
+
+NATS streaming would have a collection of channels and if any event happens in that channels
+it will be published to the services which subscribes it.
+
+subject --> name of the channel which we want to publish to
+channel --> which we want to listen to
+subscribtion --> which listen and emits an event.
+
+all data should be converted into JSON
+
+const stan = nats.connect('ticketing', randomBytes(4).toString('hex'), {
+  url: 'http://localhost:4222',
+});
+
+stan.publish('ticket:created',data,()=>{
+}) //subject name // data // optional callback
+
+Important Properities in Message:
+
+getSubject()--> name of channel
+
+getSequence() --> no of message, each event starts from 1 and gets incremented
+
+getData() --> get the data of the message
+
+Client-ID : whenever we connect to NATS stream server , we create it with client-ID , hence each client or replica should have a unique client ID
+NATS server has a set of client list
+
+Queue Groups : Created inside of channel (can have multiple queue groups), different instances of listeners can join the queue group, NATS randomly
+select one of the instance in queue group and post it
+
+stan.on('connect', () => {
+  console.log('Listener connected to NATS');
+  options = stan.subscriptionOptions().setManualAckMode(true)  //to set options used chained function calls
+
+  const subscription = stan.subscribe(
+    'ticket:created',
+    'orders-service-queue-group',
+	options
+  ); // orders-service-queue-group is the queue-group
+  
+  
+Manual Ack Mode:
+
+Listener should ack the event, else it will be forward again or to other member of queue group after some delay.
+
+In listener ==> msg.ack(); 
+
+Monitoring --> localhost:8222/streaming/channelsz?subs=1
+
+hbi --> how often NATS server will send heart beat request to client
+
+hbt --> how long will the client take to respond
+
+hbf --> no of times that each client has fails 
+
+
+shutdown request
+
+stan.on('close',()=>{
+process.exit();
+
+process.on('SIGINT',()=> stan.close());
+process.on('SIGTERM',()=> stan.close());
+
+concurrency issues:
+
+1. happens with both async communication / sync communication / monolith app also
+
+solutions:
+1. share state --> Processed sequence --> add the sequence no to the state and check everytime a new sequence , should be checked
+   need channel for every userSchema
+2. Check possible solutions for concurrency issues
+3. Using an independant database something like a transaction database which contains a version number sent via event, which takes the transactions before any other service and distributes it,
+sequentially --> Order will also will have version number --> mongo has versioning capabilities
+
+
+Event Redelivery:
+
+Options = stan.subscriptionOptions().setDeliverAllAvailable().setDurableName('Name');
+
+record the successfully processed and unprocessed events under durable subscription, when listener back online only not processed events will be sent, for restart setDeliverAllAvailable will be ignored.
+
+});
+
+
+
+
+
+Creation of re-usable NATS server
+1. creation of listener abstract class with properties subject(abstract),onMessage event(abstract), client, queueGroupName(abstract), ackWait, subscriptionOptions, listen, parseMessage
+2. create a seperate class for single listener (TicketCreatedListener or OrderUpdatedListener) from the abstract class
+3. by using strong mapping between subject and the event data types, we can use the subject as decision for type assignments
+4. Create a enum Subjects --> TicketCreated = "subject", OrderUpdated = "subject"
+5. Custom Event Interface TicketCreatedEvent will contains subject and data : { types }
+6. Create a generic Event with subject and data
+
+
+publish function in publisher is async function hence it should return a Promise
+
+publish(data: T['data']): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.client.publish(this.subject, JSON.stringify(data), (err) => {
+        if (err) {
+          return reject(err);
+        }
+        console.log('Event published to subject', this.subject);
+        resolve();
+      });
+    });
+  }
+  
+Singleton stan should be created
+
+
+Solving Data integrity issues -> when even is lost
+
+Save the transaction in transaction database and the event in the event collection database with a flag mentioned if the event is sent or not,
+
+seperate code/process watching events, if event is sent by NATS, then the event collection is updated to Sent:YES,
+
+There is possibility of saving the transaction in database but event doesn't get saved, hence a rollback is needed
+
+Database transaction in mongo-db:
+
+A -> Atomicity
+C -> Consistency
+I -> Isolation
+D -> Durabiliy
+
+'use strict';
+const mongodb = require('mongodb');
+const transactions = {};
+
+/**
+ * Connect database
+ * @returns {Promise<void>}
+ */
+const connectDb = async () => {
+    return mongodb.connect(`<DB URL>`, {useNewUrlParser: true});
+};
+
+/**
+ * Execute MongoDB Transactions
+ * @returns {Promise<void>}
+ */
+transactions.executeTransaction = async () => {
+    let connectionForTransaction = await connectDb();
+    const db = connectionForTransaction.db();
+
+    const session = connectionForTransaction.startSession();
+    session.startTransaction();
+
+    try {
+        // Here you can write your db queries, if any query gets failed the whole transaction get rejected and your data will be not modified
+        let criteria = {}, opts = {session, returnOriginal: false};
+        const data = await db.collection('user').findOne(criteria, {}, opts).toArray();
+
+        // If all queries are successfully executed then session commit the transactions and changes get refelected
+        await session.commitTransaction();
+        
+        // After the successfull transaction sesstion gets ended and connection must be closed
+        session.endSession();
+        connectionForTransaction.close();
+    } catch (error) {
+
+        // If an error occurred, abort the whole transaction and undo any changes that might have happened
+        await session.abortTransaction();
+        session.endSession();
+        connectionForTransaction.close();
+        throw error; // Rethrow so calling function sees error
+    }
+};module.exports = transactions;// call transactions object's 'executeTransaction' function in anywhere 
+
+
+Testing Nats-wrapper-ts-jest
+1. __mocks__ folder --> nats-wrapper.ts
+
+export const natsWrapper = {
+ client:{
+ publish:jest.fn().mockImplementation((subject:string,data:string,callback:()=>void)=>{
+  callback();
+ })
+ }
+}
+
+2. jest.mock('../../nats-wrapper') in setup.ts file
+3. Before each => jest.clearAllmocks(); 
+In test file, we check if the fake function is invoked.
+   expect(natsWrapper.client.publish).toHavebeenCalled())
+   
+Client name can be given as name of kubectl pod
+
+env:
+ - name: NATS_CLIENT_ID
+   valueFrom:
+     fieldRef:
+		fieldPath:metadata.name
+		
+Relationship between two models in Mongoose:
+1. Embedding --> usually have downsides
+2. Mongoose Ref / Population Feature
+
+Finding existing order with the ticket
+
+ticketSchema.methods.isReserved = async function () {
+  // this === the ticket document that we just called 'isReserved' on
+  const existingOrder = await Order.findOne({
+    ticket: this,
+    status: {
+      $in: [
+        OrderStatus.Created,
+        OrderStatus.AwaitingPayment,
+        OrderStatus.Complete,
+      ],
+    },
+  });
+
+  return !!existingOrder;
+};
+
+Maintaining Consistency between different databases through ID
+
+ticketSchema.statics.build = (attrs: TicketAttrs) => {
+  return new Ticket({
+    _id: attrs.id,
+    title: attrs.title,
+    price: attrs.price,
+  });
+};
+
+Record updates with optimistic concurrency control
+
+Mongoose sends an update request off to mongoDB and MongoDB finds the ticket and the version and sets it to the corresponding version
+
+
+concurrency issue with mongoose
+
+npm install mongoose_update_if_current
+import { updateIfCurrentPlugin } from 'mongoose-update-if-current';
+ticketSchema.set('version-key','version')
+ticketSchema.plugin(updateIfCurrentPlugin)
+
+Only the primary service which is responsible for the record emits an event, is going to increments the version number
+
+const ticketUpdatedData = JSON.parse((natsWrapper.client.publish as jest.Mock).mock.calls[0][1])
+
+
+Namespacing -- isolating resources per process (or group of processes)
+
+control groups -- limit amount of resources used per process
+
+Image --> file system snapshot
+
+there is a linux virtual machine installed which has kernel which is does the namespacing and control group
+
+docker system prune
+
+Expiration Service -- Worker service
+
+1. Order service need to know when an order is expired
+2. Event bus can be configured to wait for 15 mins before publishing (scheduled event) -- not supported by Nats-depl
+3. Remind to do something 15 minutes from now by Bull JS library
+
+npm install bull @types/bull
+
+bull JS(queue) queue the job to Redis and the worker server(queue processing) pulls the job and does processing and gets notification
+
+
+
+expiration-queue.ts
+
+import Queue from 'bull';
+import { ExpirationCompletePublisher } from '../events/publishers/expiration-complete-publisher';
+import { natsWrapper } from '../nats-wrapper';
+
+interface Payload {
+  orderId: string;
+}
+
+const expirationQueue = new Queue<Payload>('order:expiration', {
+  redis: {
+    host: process.env.REDIS_HOST,
+  },
+});
+
+expirationQueue.process(async (job) => {
+  new ExpirationCompletePublisher(natsWrapper.client).publish({
+    orderId: job.data.orderId,
+  });
+});
+
+export { expirationQueue };
+
+In order_created_listener.ts
+
+import { Listener, OrderCreatedEvent, Subjects } from '@cygnetops/common';
+import { Message } from 'node-nats-streaming';
+import { queueGroupName } from './queue-group-name';
+import { expirationQueue } from '../../queues/expiration-queue';
+
+export class OrderCreatedListener extends Listener<OrderCreatedEvent> {
+  subject: Subjects.OrderCreated = Subjects.OrderCreated;
+  queueGroupName = queueGroupName;
+
+  async onMessage(data: OrderCreatedEvent['data'], msg: Message) {
+    const delay = new Date(data.expiresAt).getTime() - new Date().getTime();
+    console.log('Waiting this many milliseconds to process the job:', delay);
+
+    await expirationQueue.add(
+      {
+        orderId: data.id,
+      },
+      {
+        delay,
+      }
+    );
+
+    msg.ack();
+  }
+}
+
+
+Credit card information - Stripe JS library
+1. sends the cc info to stripe API and sends token to the UI
+2. with the token be used for charging the money which is one time use
+3. payment service --> take the token and requests money to stripe API
+
+should do these things
+1. npm install stripe
+2. stripe.com --> signup\
+3. use the secret key from stripe.com as kubernetes secret
+
+
+In stripe js:
+
+import Stripe from 'stripe';
+
+export const stripe = new Stripe(process.env.STRIPE_KEY!, {
+  apiVersion: '2020-08-27',
+});
+
+
+ const charge = await stripe.charges.create({
+      currency: 'usd',
+      amount: order.price * 100,
+      source: token,
+    });
+	
+CI/CD :
+
+In local machine --> make changes to code --> commit code to a git branch (besides master branch) --> push branch to github
+
+In GitHub --> Github receives updated branch --> you manually create a pull request to merge branch into master --> Github automatically runs tests for project --> After tests pass, you merge the PR into master branch --> now master branch has changed, github builds and deploys
+
+1. Mono Repo Approach --> most company does
+2. Repo-Per-Service Approach --> overhead --> seperate authentication --> seperate CI/CD pipeline
+
+git init
+
+In .gitignore
+
+node_modules
+DS_Store
+
+In github: - Github Action
+
+Actions - Tab:
+
+Event triggered whenever --> code pushed, pull request created, pull request closed, respository is Forked, so we can run Github Action
+
+Simple workflow:
+
+In tests.yml:
+
+name: tests
+
+on: pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd auth && npm install && npm run test:ci // just the auth service // no watch mode for test
+then commit the file
+
+git checkout -b dev
+
+git add .
+
+git commit
+
+git push origin dev
+
+Login to Github --> pull request tab --> New pull request --> add the pull request message
+
+Failing test cases
+
+Running tests in parallel
+
+name: tests-auth
+
+on:
+  pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd auth && npm install && npm run test:ci
+	  
+In tests-orders.yaml:
+
+name: tests-orders // both would run in parallel
+
+on:
+  pull_request
+   paths:
+    - 'auth/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd orders && npm install && npm run test:ci
+
+If all tests ran successfully , we can merge pull request button click
+
+Selective run test:
+
+.github --> workflows
+
+Digital Ocean --> create a cluster
+
+
+for debugging --> connect the kubernetes to the cluster
+
+create a context
+
+install doctl
+
+doctl auth init
+
+doctl kubernetes cluster kubeconfig save <cluster_name>  // now the all kubectl commands gets directed to the digital ocean
+
+kubectl config view
+
+kubectl config use-context docker-desktop
+
+GitHub action -- for deployment
+
+If any changes in auth service happened?:
+auth --> build new image --> push to docker hub --> update deployment
+
+At all times:
+infra --> apply all yaml files
+
+In deploy-auth.yaml   /// just for auth service
+
+name: deploy-auth  
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'auth/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - run: cd auth && docker build -t cygnetops/auth .
+      - run: docker push cygnetops/auth
+      - uses: digitalocean/action-doctl@v2        // install doctl in github container
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}  // with doctl token
+      - run: doctl kubernetes cluster kubeconfig save ticketing
+      - run: kubectl rollout restart deployment auth-depl
+
+
+
+In deploy-manifests: // for infra file
+
+name: deploy-manifests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - run: doctl kubernetes cluster kubeconfig save ticketing
+      - run: kubectl apply -f infra/k8s && kubectl apply -f infra/k8-prod
+
+create new folders k8-prod & k8-dev for production and development and ingress-depl file in the k8s folder 
+
+create secret key manually in digital ocean context
+	  
+ingress needs to run some command for digital ocean.. find it in documentation / deployment tab
+
+Buy a domain name and point it to the load balancer
+
+Ingress automatically creates a load balancer in load balancing with an external IP
+
+
+import React, { memo } from 'react';
+function arePropsEqual(prevProps, nextProps) {
+  return prevProps.label === nextProps.label; 
+}
+
+// Wrap component using `React.memo()` and pass `arePropsEqual`
+export default memo(PercentageStat, arePropsEqual);
+
+ const squaredNum = useMemo(()=> {
+    return squareNum(number);
+  }, [number])
+  
+  
+Keys --> When adding a new element in a child node the remaining part of node re-renders this can be prevented by adding a key ...  React supports a key attribute. When children have keys, React uses the key to match children in the original tree with children in the subsequent tree
+
+HOC:
+A higher-order component (HOC) is a function that takes a component and returns a new component.
+
+
+Error Boundaries
+
+Error boundaries are React components that catch JavaScript errors anywhere in their child component tree, log those errors,
+and display a fallback UI instead of the component tree that crashed.
+
+
+readableSrc.pipe(writableDest)

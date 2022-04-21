@@ -1,0 +1,7 @@
+arn:aws:iam::968112417454:user/Ravi-v2
+
+aws-ravi-prit
+
+Ravi-v2
+
+Ravi-v2@123
